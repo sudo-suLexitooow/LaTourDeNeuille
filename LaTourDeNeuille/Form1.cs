@@ -20,16 +20,11 @@ namespace LaTourDeNeuille
         // Pile de disques sur chaque tige (pour gérer l'empilement)
         private Dictionary<int, Stack<Button>> pilesParTige = new Dictionary<int, Stack<Button>>();
 
-        // Coordonnées des tiges - MÊME HAUTEUR pour toutes
-        private Dictionary<int, Point> tigePositions = new Dictionary<int, Point>
-        {
-            { 0, new Point(112, 150) }, // gauche
-            { 1, new Point(387, 150) }, // centre
-            { 2, new Point(684, 150) } // droite
-        };
+        // Références aux boutons tiges pour un accès facile
+        private Dictionary<int, Button> boutonsTiges = new Dictionary<int, Button>();
 
-        // Position y de base (sole)
-        private int positionSol =389;
+        // Position y de base (sole) - sera mise à jour dynamiquement
+        private int positionSol = 389;
         private int hauteurPiece = 60;
 
         // Déplacements autorisés
@@ -46,6 +41,11 @@ namespace LaTourDeNeuille
         public Form1()
         {
             InitializeComponent();
+
+            // Initialiser les références aux boutons tiges
+            boutonsTiges[0] = btnGauche;
+            boutonsTiges[1] = btnCentre;
+            boutonsTiges[2] = btnDroite;
 
             // Initialiser les piles pour chaque tige
             for (int i = 0; i < 3; i++)
@@ -65,8 +65,10 @@ namespace LaTourDeNeuille
             originalColors[btnMoyen] = btnMoyen.BackColor;
             originalColors[btnPetit] = btnPetit.BackColor;
 
+            // Positionner les tiges initialement
+            PositionnerTiges();
+
             // Initialiser les positions (toutes les pièces sur tige 0 au début)
-            // Empiler dans l'ordre : Fondation, Grand, Moyen, Petit
             InitialiserTour();
 
             // Événements sur les pièces
@@ -82,6 +84,51 @@ namespace LaTourDeNeuille
 
             // Activer seulement les disques du sommet et mettre à jour les textes
             MettreAJourInterface();
+        }
+
+        private void PositionnerTiges()
+        {
+            // Calculer les positions des tiges en fonction de la largeur de la fenêtre
+            int largeurFenetre = this.ClientSize.Width;
+            int hauteurFenetre = this.ClientSize.Height;
+
+            // Diviser l'espace en 3 zones égales
+            int espacement = largeurFenetre / 3;
+
+            // Position Y des tiges (plus haut, environ au cinquième supérieur de la fenêtre)
+            int positionYTiges = hauteurFenetre / 5;
+
+            // Positionner chaque tige au centre de sa zone
+            // Tige gauche
+            btnGauche.Location = new Point(
+                espacement / 2 - btnGauche.Width / 2,
+                positionYTiges
+            );
+
+            // Tige centre
+            btnCentre.Location = new Point(
+                largeurFenetre / 2 - btnCentre.Width / 2,
+                positionYTiges
+            );
+
+            // Tige droite
+            btnDroite.Location = new Point(
+                espacement * 2 + espacement / 2 - btnDroite.Width / 2,
+                positionYTiges
+            );
+
+            // Mettre à jour la position du sol (un peu au-dessus du bas de la fenêtre)
+            positionSol = hauteurFenetre - 100;
+        }
+
+        private Point ObtenirPositionTige(int indexTige)
+        {
+            // Récupérer dynamiquement la position centrale de la tige
+            Button tige = boutonsTiges[indexTige];
+            int centreX = tige.Location.X + tige.Width / 2;
+            int positionY = tige.Location.Y + tige.Height + 10; // Un peu en dessous de la tige
+
+            return new Point(centreX, positionY);
         }
 
         private void InitialiserTour()
@@ -100,12 +147,34 @@ namespace LaTourDeNeuille
                 piecePosition[disque] = 0;
                 pilesParTige[0].Push(disque);
 
-                // Calculer la position Y en fonction du nombre de disques déjà empilés
-                int nombreDisquesEnDessous = pilesParTige[0].Count - 1;
-                int positionY = positionSol - (nombreDisquesEnDessous * hauteurPiece);
-
-                disque.Location = new Point(tigePositions[0].X, positionY);
+                // Positionner le disque
+                PositionnerDisque(disque, 0);
             }
+        }
+
+        private void PositionnerDisque(Button disque, int indexTige)
+        {
+            // Obtenir la position centrale de la tige
+            Point positionTige = ObtenirPositionTige(indexTige);
+
+            // Convertir la pile en liste pour trouver l'index
+            List<Button> disquesList = pilesParTige[indexTige].ToList();
+            disquesList.Reverse(); // Inverser car Stack est LIFO
+
+            // Calculer la position Y en fonction du nombre de disques en dessous
+            int nombreDisquesEnDessous = disquesList.IndexOf(disque);
+            if (nombreDisquesEnDessous == -1)
+            {
+                // Si le disque n'est pas trouvé, c'est qu'il sera au sommet
+                nombreDisquesEnDessous = pilesParTige[indexTige].Count - 1;
+            }
+
+            int positionY = positionSol - (nombreDisquesEnDessous * hauteurPiece);
+
+            // Centrer le disque horizontalement par rapport à la tige
+            int positionX = positionTige.X - disque.Width / 2;
+
+            disque.Location = new Point(positionX, positionY);
         }
 
         private void btnDisque_Click(object sender, EventArgs e)
@@ -156,10 +225,25 @@ namespace LaTourDeNeuille
         {
             int tigeActuelle = piecePosition[piece];
 
+            // Vérifier si on essaie de déplacer sur la même tige
+            if (tigeActuelle == tigeCible)
+            {
+                // Annuler la sélection sans message
+                foreach (var b in originalColors)
+                    b.Key.BackColor = b.Value;
+                pieceSelectionnee = null;
+                return;
+            }
+
             // Vérifier si le déplacement est autorisé (tige voisine)
             if (!tigesVoisines[tigeActuelle].Contains(tigeCible))
             {
                 MessageBox.Show("Déplacement interdit ! Vous ne pouvez déplacer que vers une tige adjacente.");
+
+                // Réinitialiser la sélection
+                foreach (var b in originalColors)
+                    b.Key.BackColor = b.Value;
+                pieceSelectionnee = null;
                 return;
             }
 
@@ -181,7 +265,6 @@ namespace LaTourDeNeuille
                     InitialiserTour();
                     MettreAJourInterface();
                     return;
-
                 }
             }
 
@@ -197,12 +280,8 @@ namespace LaTourDeNeuille
             // Mise à jour de la position
             piecePosition[piece] = tigeCible;
 
-            // Calculer la nouvelle position Y en fonction du nombre de disques sur la tige cible
-            int nombreDisquesEnDessous = pilesParTige[tigeCible].Count - 1;
-            int nouvellePositionY = positionSol - (nombreDisquesEnDessous * hauteurPiece);
-
-            // Déplacer le bouton avec la bonne hauteur
-            piece.Location = new Point(tigePositions[tigeCible].X, nouvellePositionY);
+            // Positionner le disque à sa nouvelle position
+            PositionnerDisque(piece, tigeCible);
 
             // Réinitialiser couleurs
             foreach (var b in originalColors)
@@ -273,9 +352,23 @@ namespace LaTourDeNeuille
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void Responsive_SizeChanged(object sender, EventArgs e)
         {
+            // Repositionner les tiges en fonction de la nouvelle taille
+            PositionnerTiges();
 
+            // Repositionner tous les disques existants
+            for (int tige = 0; tige < 3; tige++)
+            {
+                // Créer une liste temporaire car on ne peut pas itérer directement sur une Stack
+                List<Button> disquesSurTige = new List<Button>(pilesParTige[tige]);
+
+                // Repositionner chaque disque de cette tige
+                foreach (Button disque in disquesSurTige)
+                {
+                    PositionnerDisque(disque, tige);
+                }
+            }
         }
     }
 }
