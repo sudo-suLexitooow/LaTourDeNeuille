@@ -90,9 +90,10 @@
             // btnFondation
             // 
             this.btnFondation.BackColor = System.Drawing.Color.Red;
-            this.btnFondation.Location = new System.Drawing.Point(112, 395);
+            this.btnFondation.FlatAppearance.BorderSize = 0;
+            this.btnFondation.Location = new System.Drawing.Point(112, 387);
             this.btnFondation.Name = "btnFondation";
-            this.btnFondation.Size = new System.Drawing.Size(269, 54);
+            this.btnFondation.Size = new System.Drawing.Size(269, 60);
             this.btnFondation.TabIndex = 3;
             this.btnFondation.Text = "btnFondation";
             this.btnFondation.UseVisualStyleBackColor = false;
@@ -101,9 +102,10 @@
             // btnGrand
             // 
             this.btnGrand.BackColor = System.Drawing.Color.MediumTurquoise;
-            this.btnGrand.Location = new System.Drawing.Point(112, 338);
+            this.btnGrand.FlatAppearance.BorderSize = 0;
+            this.btnGrand.Location = new System.Drawing.Point(112, 332);
             this.btnGrand.Name = "btnGrand";
-            this.btnGrand.Size = new System.Drawing.Size(198, 51);
+            this.btnGrand.Size = new System.Drawing.Size(198, 60);
             this.btnGrand.TabIndex = 4;
             this.btnGrand.Text = "btbGrand";
             this.btnGrand.UseVisualStyleBackColor = false;
@@ -112,9 +114,10 @@
             // btnMoyen
             // 
             this.btnMoyen.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-            this.btnMoyen.Location = new System.Drawing.Point(112, 274);
+            this.btnMoyen.FlatAppearance.BorderSize = 0;
+            this.btnMoyen.Location = new System.Drawing.Point(112, 278);
             this.btnMoyen.Name = "btnMoyen";
-            this.btnMoyen.Size = new System.Drawing.Size(123, 58);
+            this.btnMoyen.Size = new System.Drawing.Size(123, 60);
             this.btnMoyen.TabIndex = 5;
             this.btnMoyen.Text = "btnMoyen";
             this.btnMoyen.UseVisualStyleBackColor = false;
@@ -123,7 +126,8 @@
             // btnPetit
             // 
             this.btnPetit.BackColor = System.Drawing.Color.Yellow;
-            this.btnPetit.Location = new System.Drawing.Point(112, 200);
+            this.btnPetit.FlatAppearance.BorderSize = 0;
+            this.btnPetit.Location = new System.Drawing.Point(112, 215);
             this.btnPetit.Name = "btnPetit";
             this.btnPetit.Size = new System.Drawing.Size(80, 68);
             this.btnPetit.TabIndex = 6;
@@ -170,6 +174,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "Form1";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
